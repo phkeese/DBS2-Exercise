@@ -26,7 +26,7 @@ public class TPMMSJava extends SortOperation {
 
     @Override
     public void sort(@NotNull Relation relation, @NotNull BlockOutput output) {
-        //Phase 1: Sort all Lists
+        // Phase 1: Sort all Lists
         /*
         * Listen erstellen
         * Für jede Liste:
@@ -38,7 +38,7 @@ public class TPMMSJava extends SortOperation {
         int partitionSize = bm.getFreeBlocks();
         int totalRelationSize = relation.getEstimatedSize();
 
-        //check if available space is sufficient
+        // Check if available space is sufficient
         if(totalRelationSize > partitionSize  * partitionSize)
             throw new RelationSizeExceedsCapacityException();
 
@@ -47,7 +47,7 @@ public class TPMMSJava extends SortOperation {
         List<List<Block>> lists = Lists.partition(blockList, partitionSize);
 
 
-        //Phase 2: Merge!
+        // Phase 2: Merge!
         throw new UnsupportedOperationException("TODO");
     }
 }
