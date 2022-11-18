@@ -22,7 +22,8 @@ public class TPMMSJava extends SortOperation {
 
     @Override
     public int estimatedIOCost(@NotNull Relation relation) {
-        throw new UnsupportedOperationException("TODO");
+        //throw new UnsupportedOperationException("TODO");
+        return 0;
     }
 
     @Override
@@ -93,6 +94,10 @@ public class TPMMSJava extends SortOperation {
                 states.remove(smallest);
             }
         }
+        if(!outputBlock.isEmpty()){
+            output.output(outputBlock);
+        }
+        bm.release(outputBlock, false);
 
     }
 
