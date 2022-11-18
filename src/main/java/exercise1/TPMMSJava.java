@@ -117,6 +117,14 @@ public class TPMMSJava extends SortOperation {
                 output.output(outputBlock);
             }
 
+            /* Idee: Wir kapseln eine Partition in einer neuen Klasse mit Methoden
+             * sort() -> lädt alle Blöcke, sortiert diese, speichert auf Platte
+             * iterator() -> gibt einen Iterator zurück, der automatisch Blöcke lädt/freigibt
+             *
+             * Wichtig: Wir verwalten dann eine Liste aus Iteratoren und löschen einen Iterator, sobald er keine Tupel
+             * mehr hat. Damit sparen wir uns viele Edge-Cases mit null und alten Daten
+             */
+
             // Read next tuple
             if (nextTuples.get(smallest).hasNext()) {
                 currentTuples[smallest] = nextTuples.get(smallest).next();
