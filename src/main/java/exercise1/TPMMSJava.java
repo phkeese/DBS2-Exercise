@@ -49,9 +49,7 @@ public class TPMMSJava extends SortOperation {
             @Override
             public void accept(List<Block> blocks) {
                 // Load list into memory
-                for (int i = 0; i < blocks.size(); i++) {
-                    blocks.set(i, bm.load(blocks.get(i)));
-                }
+                loadAll(blocks, bm);
 
                 // Sort
                 BlockSorter.INSTANCE.sort(
@@ -61,16 +59,26 @@ public class TPMMSJava extends SortOperation {
                 );
 
                 // Write back to disk
-                for (int i = 0; i < blocks.size(); i++) {
-                    Block ramBlock = blocks.get(i);
-                    Block diskBlock = bm.release(ramBlock, true);
-                    blocks.set(i, diskBlock);
-                }
+                saveAll(blocks, bm);
             }
         });
 
 
         // Phase 2: Merge!
         throw new UnsupportedOperationException("TODO");
+    }
+
+    private static void saveAll(@NotNull List<Block> blocks, BlockManager bm) {
+        for (int i = 0; i < blocks.size(); i++) {
+            Block ramBlock = blocks.get(i);
+            Block diskBlock = bm.release(ramBlock, true);
+            blocks.set(i, diskBlock);
+        }
+    }
+
+    private static void loadAll(@NotNull List<Block> blocks, BlockManager bm) {
+        for (int i = 0; i < blocks.size(); i++) {
+            blocks.set(i, bm.load(blocks.get(i)));
+        }
     }
 }
