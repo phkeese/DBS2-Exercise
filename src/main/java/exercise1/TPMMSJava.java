@@ -73,9 +73,24 @@ public class TPMMSJava extends SortOperation {
             }
         });
 
+        var currentBlocks = Lists.transform(nextBlocks, new Function<Iterator<Block>, Block>() {
+            @Override
+            public Block apply(Iterator<Block> input) {
+                Block block = input.next();
+                return block;
+            }
+        });
 
+        var nextTuple = Lists.transform(currentBlocks, new Function<Block, Iterator<Tuple>>() {
+            @Override
+            public Iterator<Tuple> apply(Block input) {
+                return input.iterator();
+            }
+        });
 
         // Phase 2: Merge!
+
+        //
         throw new UnsupportedOperationException("TODO");
     }
 
