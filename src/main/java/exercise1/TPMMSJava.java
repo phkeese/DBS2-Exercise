@@ -11,6 +11,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.function.Consumer;
 
 @ChosenImplementation(true)
@@ -65,6 +66,7 @@ public class TPMMSJava extends SortOperation {
             }
         });
 
+
         // Get iterators for each list's blocks
         var nextBlocks = Lists.transform(partitions, new Function<List<Block>, Iterator<Block>>() {
             @Override
@@ -77,10 +79,11 @@ public class TPMMSJava extends SortOperation {
             @Override
             public Block apply(Iterator<Block> input) {
                 Block block = input.next();
-                return block;
+                return bm.load(block);
             }
         });
 
+        //List currentTuples[] = new ArrayList<Integer>;
         var nextTuple = Lists.transform(currentBlocks, new Function<Block, Iterator<Tuple>>() {
             @Override
             public Iterator<Tuple> apply(Block input) {
@@ -91,6 +94,11 @@ public class TPMMSJava extends SortOperation {
         // Phase 2: Merge!
 
         //
+        boolean hasTupel = false;
+        do{
+            //
+        }while(hasTupel);
+
         throw new UnsupportedOperationException("TODO");
     }
 
