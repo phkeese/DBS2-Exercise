@@ -22,8 +22,7 @@ public class TPMMSJava extends SortOperation {
 
     @Override
     public int estimatedIOCost(@NotNull Relation relation) {
-        //throw new UnsupportedOperationException("TODO");
-        return 0;
+        return 4 * relation.getEstimatedSize();
     }
 
     @Override
