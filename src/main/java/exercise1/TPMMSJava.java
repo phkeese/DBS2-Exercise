@@ -1,5 +1,6 @@
 package exercise1;
 
+import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 import de.hpi.dbs2.ChosenImplementation;
 import de.hpi.dbs2.dbms.*;
@@ -8,6 +9,7 @@ import de.hpi.dbs2.exercise1.SortOperation;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -42,10 +44,10 @@ public class TPMMSJava extends SortOperation {
 
         int listCount = totalRelationSize / partitionSize + (totalRelationSize % partitionSize > 0 ? 1 : 0);
         List<Block> blockList = Lists.newArrayList(relation.iterator());
-        List<List<Block>> lists = Lists.partition(blockList, partitionSize);
+        List<List<Block>> partitions = Lists.partition(blockList, partitionSize);
 
         // Sort each list and store back on disk
-        lists.forEach(new Consumer<List<Block>>() {
+        partitions.forEach(new Consumer<List<Block>>() {
             @Override
             public void accept(List<Block> blocks) {
                 // Load list into memory
@@ -62,6 +64,15 @@ public class TPMMSJava extends SortOperation {
                 saveAll(blocks, bm);
             }
         });
+
+        // Get iterators for each list's blocks
+        var nextBlocks = Lists.transform(partitions, new Function<List<Block>, Iterator<Block>>() {
+            @Override
+            public Iterator<Block> apply(List<Block> input) {
+                return input.iterator();
+            }
+        });
+
 
 
         // Phase 2: Merge!
