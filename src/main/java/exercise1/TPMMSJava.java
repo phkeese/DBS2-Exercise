@@ -67,9 +67,33 @@ public class TPMMSJava extends SortOperation {
         });
 
         // Phase 2: Merge!
-        
 
-        throw new UnsupportedOperationException("TODO");
+        List<PartitionState> states = Lists.newArrayList();
+        for(int i = 0; i < partitions.size(); i++){
+            states.add(new PartitionState(partitions.get(i)));
+        }
+
+        Block outputBlock = bm.allocate(true);
+        while (!states.isEmpty()){
+            PartitionState smallest = states.get(0);
+            for(int i = 1; i < states.size(); i++){
+                if(relation.getColumns().getColumnComparator(getSortColumnIndex())
+                        .compare(states.get(i).currentTuple, smallest.currentTuple) < 0){
+                    smallest = states.get(i);
+                }
+            }
+            outputBlock.append(smallest.currentTuple);
+            if(outputBlock.isFull()){
+                output.output(outputBlock);
+            }
+            if(smallest.hasNext()){
+                smallest.next();
+            } else {
+                smallest.release();
+                states.remove(smallest);
+            }
+        }
+
     }
 
     private static void saveAll(@NotNull List<Block> blocks, BlockManager bm) {
@@ -84,5 +108,49 @@ public class TPMMSJava extends SortOperation {
         for (int i = 0; i < blocks.size(); i++) {
             blocks.set(i, bm.load(blocks.get(i)));
         }
+    }
+
+    class PartitionState {
+        Block currentBlock;
+        Iterator<Block> blockIterator;
+        Tuple currentTuple;
+        Iterator<Tuple> tupleIterator;
+
+        public PartitionState(List<Block> partition){
+            blockIterator = partition.iterator();
+            if(blockIterator.hasNext()){
+                currentBlock = blockIterator.next();
+                currentBlock = getBlockManager().load(currentBlock);
+                tupleIterator = currentBlock.iterator();
+                currentTuple = tupleIterator.next();
+            } else {
+                currentBlock = null;
+                currentTuple = null;
+                tupleIterator = null;
+            }
+        }
+        public boolean hasNext(){
+            return tupleIterator.hasNext() || blockIterator.hasNext();
+        }
+
+        public Tuple next(){
+            if(tupleIterator.hasNext()){
+                return currentTuple = tupleIterator.next();
+            } else {
+                getBlockManager().release(currentBlock, false);
+                currentBlock = blockIterator.next();
+                currentBlock = getBlockManager().load(currentBlock);
+                tupleIterator = currentBlock.iterator();
+                currentTuple = tupleIterator.next();
+            }
+            return null;
+        }
+
+        public void release(){
+            if(currentBlock != null){
+                getBlockManager().release(currentBlock, false);
+            }
+        }
+
     }
 }
