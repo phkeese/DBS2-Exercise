@@ -66,87 +66,8 @@ public class TPMMSJava extends SortOperation {
             }
         });
 
-
-        // Get iterators for each list's blocks
-        var nextBlocks = Lists.transform(partitions, new Function<List<Block>, Iterator<Block>>() {
-            @Override
-            public Iterator<Block> apply(List<Block> input) {
-                return input.iterator();
-            }
-        });
-
-        var currentBlocks = Lists.transform(nextBlocks, new Function<Iterator<Block>, Block>() {
-            @Override
-            public Block apply(Iterator<Block> input) {
-                Block block = input.next();
-                return bm.load(block);
-            }
-        });
-
-        var nextTuples = Lists.transform(currentBlocks, new Function<Block, Iterator<Tuple>>() {
-            @Override
-            public Iterator<Tuple> apply(Block input) {
-                return input.iterator();
-            }
-        });
-        Tuple currentTuples[] = new Tuple[partitions.size()];
-        // Fill current tuples
-        for (int i = 0; i < partitions.size(); i++) {
-            currentTuples[i] = nextTuples.get(i).next();
-        }
-
         // Phase 2: Merge!
-
-        boolean hasTuple = false;
-        Block outputBlock = bm.allocate(true);
-        do{
-            hasTuple = false;
-
-            // Find smallest value
-            int smallest = 0;
-            for (int i = 1; i < partitions.size(); i++) {
-                Tuple here = currentTuples[i];
-                if (here != null && relation.getColumns().getColumnComparator(getSortColumnIndex()).compare(here, currentTuples[smallest]) < 0) {
-                    smallest = i;
-                }
-            }
-
-            // Write smallest to output & write out if full
-            outputBlock.append(currentTuples[smallest]);
-            if (outputBlock.isFull()) {
-                output.output(outputBlock);
-            }
-
-            /* Idee: Wir kapseln eine Partition in einer neuen Klasse mit Methoden
-             * sort() -> lädt alle Blöcke, sortiert diese, speichert auf Platte
-             * iterator() -> gibt einen Iterator zurück, der automatisch Blöcke lädt/freigibt
-             *
-             * Wichtig: Wir verwalten dann eine Liste aus Iteratoren und löschen einen Iterator, sobald er keine Tupel
-             * mehr hat. Damit sparen wir uns viele Edge-Cases mit null und alten Daten
-             */
-
-            // Read next tuple
-            if (nextTuples.get(smallest).hasNext()) {
-                currentTuples[smallest] = nextTuples.get(smallest).next();
-            } else {
-                // Block end, try to get new block
-                // Release old block
-                Block oldBlock = currentBlocks.get(smallest);
-                bm.release(oldBlock, false);
-                // Get new block
-                Iterator<Block> nextBlockIterator = nextBlocks.get(smallest);
-                if (nextBlockIterator.hasNext()) {
-                    // Available, load into memory and get new tuples
-                    Block newBlock = nextBlockIterator.next();
-                    newBlock = bm.load(newBlock);
-                    currentBlocks.set(smallest, newBlock);
-                    nextTuples.set(smallest, newBlock.iterator());
-                    currentTuples[smallest] = nextTuples.get(smallest).next();
-                } else {
-                    currentTuples[smallest] = null;
-                }
-            }
-        }while(hasTuple);
+        
 
         throw new UnsupportedOperationException("TODO");
     }
