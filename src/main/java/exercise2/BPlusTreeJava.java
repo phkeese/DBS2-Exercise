@@ -124,8 +124,15 @@ public class BPlusTreeJava extends AbstractBPlusTree {
 
         rightLeaf.nextSibling = leaf.nextSibling;
         leaf.nextSibling = rightLeaf;
-        if(rootNode instanceof LeafNode){
-            rootNode = new InnerNode(leaf.order, leaf, rightLeaf);
+        if(rootNode instanceof InitialRootNode){
+            LeafNode newLeaf = new LeafNode(leaf.order);
+            for (int i = 0; i < rootNode.keys.length; i++) {
+                newLeaf.keys[i] = rootNode.keys[i];
+                newLeaf.references[i] = ((LeafNode)rootNode).references[i];
+
+            }
+            newLeaf.nextSibling = rightLeaf;
+            rootNode = new InnerNode(leaf.order, newLeaf, rightLeaf);
             return null;
         }
         return rightLeaf;
@@ -144,7 +151,7 @@ public class BPlusTreeJava extends AbstractBPlusTree {
             int referenceIndex = index + 1;
             for (int i = node.keys.length - 1; i > index; i--) {
                 node.keys[i] = node.keys[i - 1];
-                node.references[i] = node.references[i - 1];
+                node.references[i + 1] = node.references[i - 1 + 1];
             }
 
             node.keys[index] = key;
