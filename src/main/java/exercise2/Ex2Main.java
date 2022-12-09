@@ -2,6 +2,7 @@ package exercise2;
 
 import de.hpi.dbs2.exercise2.*;
 
+
 public class Ex2Main {
     public static void main(String[] args) {
         int order = 4;

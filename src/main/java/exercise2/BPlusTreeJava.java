@@ -25,19 +25,23 @@ public class BPlusTreeJava extends AbstractBPlusTree {
     @Nullable
     @Override
     public ValueReference insert(@NotNull Integer key, @NotNull ValueReference value) {
-        //   It is a good idea to track the "path" to the LeafNode in a Stack or something alike.
         Stack<InnerNode> path = new Stack<>();
 
-        // Find LeafNode in which the key has to be inserted.
+        // Find LeafNode into which the key has to be inserted.
         BPlusTreeNode<?> current = rootNode;
 
-        while(current.references.length == current.order){
+        // Traverse path along tree to responsible child node
+        while(current instanceof InnerNode){
             InnerNode innerNode  = (InnerNode)current;
             path.push(innerNode);
             current = innerNode.selectChild(key);
         }
         LeafNode leafNode  = (LeafNode) current;
 
+        // Insert into child and check, if we need to split
+        LeafNode rightLeaf = insertIntoLeaf(leafNode, key, value);
+
+        /*
         // Does the key already exist? Overwrite!
         //   leafNode.references[pos] = value;
         //   But remember return the old value!
@@ -136,9 +140,19 @@ public class BPlusTreeJava extends AbstractBPlusTree {
         }
         // cant happen?
         return 0;
+
+         */
+        return null;
     }
 
     BPlusTreeNode<?> addChild(InnerNode parent, BPlusTreeNode<?> child, int key){
+        // Edge Case #1: New Parent node, parent is empty
+        if (parent.isEmpty()) {
+            parent.keys[0] = key;
+            parent.references[0] = child;
+            return null;
+        }
+
         // New key - Is there still space?
         //   leafNode.keys[pos] = key;
         //   leafNode.references[pos] = value;
@@ -182,6 +196,55 @@ public class BPlusTreeJava extends AbstractBPlusTree {
         rightNode.references[halfCount] = overflowValue;
 
         return parent;
+    }
+
+    LeafNode insertIntoLeaf(LeafNode leaf, Integer key, ValueReference value) {
+        // Case 1: Still room!
+        if (!leaf.isFull()) {
+            // Insert by shifting values to the right, starting from back
+            int index = getKeyIndex(key, leaf.keys);
+            for (int i = leaf.keys.length - 1; i > index; i--) {
+                leaf.keys[i] = leaf.keys[i - 1];
+                leaf.references[i] = leaf.references[i - 1];
+            }
+
+            leaf.keys[index] = key;
+            leaf.references[index] = value;
+
+            // No new leaf needed!
+            return null;
+        }
+
+        // Case 2: Not enough room!
+        int firstRightIndex = leaf.keys.length / 2;
+        if (getKeyIndex(key, leaf.keys) > firstRightIndex) {
+            firstRightIndex++;
+        }
+        int rightCount = leaf.keys.length - firstRightIndex;
+        Entry[] rightEntries = new Entry[rightCount];
+        for (int i = 0; i < rightCount; i++) {
+            int leftIndex = firstRightIndex + i;
+            rightEntries[i] = new Entry(leaf.keys[leftIndex],leaf.references[leftIndex]);
+            leaf.keys[leftIndex] = null;
+            leaf.references[leftIndex] = null;
+        }
+        LeafNode rightLeaf = new LeafNode(leaf.order, rightEntries);
+        // Definitely enough space for insertion in both
+        if (key < rightLeaf.getSmallestKey()) {
+            insertIntoLeaf(leaf, key, value);
+        } else {
+            insertIntoLeaf(rightLeaf, key, value);
+        }
+        return rightLeaf;
+    }
+
+    // Get index where this key should be inserted at
+    int getKeyIndex(Integer key, Integer[] keys) {
+        int index = 0;
+        while (keys[index] != null && keys[index] < key) {
+            index++;
+        }
+        return index;
     }
 }
 
