@@ -235,7 +235,51 @@ public class BPlusTreeJava extends AbstractBPlusTree {
         } else {
             insertIntoLeaf(rightLeaf, key, value);
         }
+
+        rightLeaf.nextSibling = leaf.nextSibling;
+        leaf.nextSibling = rightLeaf;
         return rightLeaf;
+    }
+
+    InnerNode insertIntoInner(InnerNode node, BPlusTreeNode<?> child) {
+        Integer key = child.getSmallestKey();
+        // Case 1: Still room!
+        if (!node.isFull()) {
+            // Insert by shifting values to the right, starting from back
+            int index = getKeyIndex(key, node.keys);
+            for (int i = node.keys.length - 1; i > index; i--) {
+                node.keys[i] = node.keys[i - 1];
+                node.references[i] = node.references[i - 1];
+            }
+
+            node.keys[index] = key;
+            node.references[index] = child;
+
+            // No new node needed!
+            return null;
+        }
+
+        // Case 2: Not enough room!
+        int firstRightIndex = node.keys.length / 2;
+        if (getKeyIndex(key, node.keys) > firstRightIndex) {
+            firstRightIndex++;
+        }
+        int rightCount = node.keys.length - firstRightIndex;
+        BPlusTreeNode<?>[] rightChildren = new BPlusTreeNode<?>[rightCount];
+        for (int i = 0; i < rightCount; i++) {
+            int leftIndex = firstRightIndex + i;
+            rightChildren[i] = node.references[leftIndex];
+            node.keys[leftIndex] = null;
+            node.references[leftIndex] = null;
+        }
+        InnerNode rightNode = new InnerNode(node.order, rightChildren);
+        // Definitely enough space for insertion in both
+        if (key < rightNode.getSmallestKey()) {
+            insertIntoInner(node, child);
+        } else {
+            insertIntoInner(rightNode, child);
+        }
+        return rightNode;
     }
 
     // Get index where this key should be inserted at
