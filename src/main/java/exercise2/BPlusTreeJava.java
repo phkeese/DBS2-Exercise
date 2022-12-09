@@ -60,9 +60,13 @@ public class BPlusTreeJava extends AbstractBPlusTree {
 
         do{
             if(currentNode != null){
-                currentNode = insertIntoInner(path.pop(), currentNode);
+                if(!path.isEmpty()){
+                    currentNode = insertIntoInner(path.pop(), currentNode, path.isEmpty());
+                }else {
+                    currentNode = null;
+                }
             }else {
-                currentNode = insertIntoInner(path.pop(), rightLeaf);
+                currentNode = insertIntoInner(path.pop(), rightLeaf, path.isEmpty());
             }
         } while(currentNode != null);
 
@@ -127,10 +131,11 @@ public class BPlusTreeJava extends AbstractBPlusTree {
         return rightLeaf;
     }
 
-    InnerNode insertIntoInner(InnerNode node, BPlusTreeNode<?> child) {
+    InnerNode insertIntoInner(InnerNode node, BPlusTreeNode<?> child, Boolean isStackempty) {
         Integer key = child.getSmallestKey();
         if(child instanceof InnerNode){
-            child.keys[getLargestIndex(child.keys)] = null;
+            key = child.keys[child.keys.length- 1];
+            child.keys[child.keys.length - 1] = null;
         }
         // Case 1: Still room!
         if (!node.isFull()) {
@@ -165,9 +170,17 @@ public class BPlusTreeJava extends AbstractBPlusTree {
         InnerNode rightNode = new InnerNode(node.order, rightChildren);
         // Definitely enough space for insertion in both
         if (key < rightNode.getSmallestKey()) {
-            insertIntoInner(node, child);
+            insertIntoInner(node, child, isStackempty);
         } else {
-            insertIntoInner(rightNode, child);
+            insertIntoInner(rightNode, child, isStackempty);
+        }
+
+        rightNode.keys[rightNode.keys.length - 1] = node.keys[getLargestIndex(node.keys)];
+        node.keys[rightNode.keys.length - 1] = null;
+
+        if(isStackempty){
+            rightNode.keys[rightNode.keys.length - 1] = null;
+            rootNode = new InnerNode(node.order, node, rightNode);
         }
         return node;
     }
