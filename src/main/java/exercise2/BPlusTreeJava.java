@@ -80,59 +80,6 @@ public class BPlusTreeJava extends AbstractBPlusTree {
         return value;
     }
 
-    BPlusTreeNode<?> addChild(InnerNode parent, BPlusTreeNode<?> child, int key){
-        // Edge Case #1: New Parent node, parent is empty
-        if (parent.isEmpty()) {
-            parent.keys[0] = key;
-            parent.references[0] = child;
-            return null;
-        }
-
-        // New key - Is there still space?
-        //   leafNode.keys[pos] = key;
-        //   leafNode.references[pos] = value;
-        //   Don't forget to update the parent keys and so on...
-        int overflowKey = 0;
-        BPlusTreeNode<?> overflowValue = null;
-
-        for(int i = 0; i < parent.keys.length; i++){
-            // insertion sort from back
-            if(parent.keys[i] == null || i == parent.keys.length - 1){
-                if(parent.keys[i] != null){
-                    overflowKey = parent.keys[i];
-                    overflowValue = parent.references[i];
-                }
-                for (int j = i - 1; parent.keys[j] > key; j--){
-                    parent.keys[i] = parent.keys[j];
-                    parent.references[i] = parent.references[j];
-                    i--;
-                }
-                parent.keys[i] = key;
-                parent.references[i] = child;
-                if(overflowValue == null){
-                    return null;
-                }
-            }
-        }
-
-        // Otherwise
-        //   Split the LeafNode in two!
-
-        int halfCount = (parent.n +1)/2;
-        BPlusTreeNode<?>[] rightChildren = new BPlusTreeNode[halfCount];
-        int middleIndex = halfCount + (parent.n +1) % 2;
-        for (int i = 0; i < halfCount; i++) {
-            rightChildren[i] = parent.references[i + middleIndex];
-            parent.keys[i + middleIndex] = null;
-            parent.references[i + middleIndex] = null;
-        }
-        InnerNode rightNode = new InnerNode(parent.order, rightChildren);
-        rightNode.keys[halfCount] = overflowKey;
-        rightNode.references[halfCount] = overflowValue;
-
-        return parent;
-    }
-
     LeafNode insertIntoLeaf(LeafNode leaf, Integer key, ValueReference value) {
         // Case 1: Still room!
         if (!leaf.isFull()) {
