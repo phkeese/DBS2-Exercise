@@ -53,7 +53,7 @@ public class BPlusTreeJava extends AbstractBPlusTree {
         LeafNode rightLeaf = insertIntoLeaf(leafNode, key, value);
 
         if(rightLeaf == null){
-            return value;
+            return null;
         }
 
         InnerNode currentNode = null;
@@ -83,7 +83,7 @@ public class BPlusTreeJava extends AbstractBPlusTree {
             InnerNode parent = path.pop();
             rightNode = insertIntoInner(parent, rightNode);
         }*/
-        return value;
+        return null;
     }
 
     LeafNode insertIntoLeaf(LeafNode leaf, Integer key, ValueReference value) {
