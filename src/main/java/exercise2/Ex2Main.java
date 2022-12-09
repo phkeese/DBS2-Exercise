@@ -65,11 +65,14 @@ public class Ex2Main {
 
         tree.insert(5, new ValueReference(5));
         tree.insert(6, new ValueReference(6));
+        System.out.println(tree);
 
         tree.insert(7, new ValueReference(5));
         tree.insert(8, new ValueReference(6));
+        System.out.println(tree);
 
         tree.insert(9, new ValueReference(5));
+        System.out.println(tree);
         tree.insert(10, new ValueReference(6));
         System.out.println(tree);
 

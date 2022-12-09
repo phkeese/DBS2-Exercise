@@ -61,12 +61,14 @@ public class BPlusTreeJava extends AbstractBPlusTree {
         do{
             if(currentNode != null){
                 if(!path.isEmpty()){
-                    currentNode = insertIntoInner(path.pop(), currentNode, path.isEmpty());
+                    InnerNode parent = path.pop();
+                    currentNode = insertIntoInner(parent, currentNode, path.isEmpty());
                 }else {
                     currentNode = null;
                 }
             }else {
-                currentNode = insertIntoInner(path.pop(), rightLeaf, path.isEmpty());
+                InnerNode parent = path.pop();
+                currentNode = insertIntoInner(parent, rightLeaf, path.isEmpty());
             }
         } while(currentNode != null);
 
@@ -166,12 +168,14 @@ public class BPlusTreeJava extends AbstractBPlusTree {
         if (getKeyIndex(key, node.keys) > firstRightIndex) {
             firstRightIndex++;
         }
-        int rightCount = node.keys.length - firstRightIndex;
+        int rightCount = node.keys.length - firstRightIndex + 1;
         BPlusTreeNode<?>[] rightChildren = new BPlusTreeNode<?>[rightCount];
         for (int i = 0; i < rightCount; i++) {
             int leftIndex = firstRightIndex + i;
             rightChildren[i] = node.references[leftIndex];
-            node.keys[leftIndex] = null;
+            if(leftIndex <= node.keys.length - 1){
+                node.keys[leftIndex] = null;
+            }
             node.references[leftIndex] = null;
         }
         InnerNode rightNode = new InnerNode(node.order, rightChildren);
@@ -183,13 +187,13 @@ public class BPlusTreeJava extends AbstractBPlusTree {
         }
 
         rightNode.keys[rightNode.keys.length - 1] = node.keys[getLargestIndex(node.keys)];
-        node.keys[rightNode.keys.length - 1] = null;
+        node.keys[getLargestIndex(node.keys)] = null;
 
         if(isStackempty){
             rightNode.keys[rightNode.keys.length - 1] = null;
             rootNode = new InnerNode(node.order, node, rightNode);
         }
-        return node;
+        return rightNode;
     }
 
     // Get index where this key should be inserted at
@@ -206,7 +210,7 @@ public class BPlusTreeJava extends AbstractBPlusTree {
         while (keys[index] != null) {
             index++;
         }
-        return index;
+        return index - 1;
     }
 }
 
