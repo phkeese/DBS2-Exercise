@@ -25,6 +25,8 @@ public class BPlusTreeJava extends AbstractBPlusTree {
     @Nullable
     @Override
     public ValueReference insert(@NotNull Integer key, @NotNull ValueReference value) {
+        // Path along the tree to get to the relevant leaf
+        // Used to fix parent nodes after split
         Stack<InnerNode> path = new Stack<>();
 
         // Find LeafNode into which the key has to be inserted.
@@ -38,10 +40,7 @@ public class BPlusTreeJava extends AbstractBPlusTree {
         }
         LeafNode leafNode  = (LeafNode) current;
 
-        // Does the key already exist? Overwrite!
-        //   leafNode.references[pos] = value;
-        //   But remember return the old value!
-
+        // Overwrite a key, if it already exists in leaf node and return old value
         for(int i = 0; i < leafNode.keys.length; i++){
             if(leafNode.keys[i] == key){
                 ValueReference oldValue = leafNode.references[i];
@@ -78,7 +77,7 @@ public class BPlusTreeJava extends AbstractBPlusTree {
             InnerNode parent = path.pop();
             rightNode = insertIntoInner(parent, rightNode);
         }*/
-        return null;
+        return value;
     }
 
     BPlusTreeNode<?> addChild(InnerNode parent, BPlusTreeNode<?> child, int key){
@@ -228,7 +227,7 @@ public class BPlusTreeJava extends AbstractBPlusTree {
     // Get index where this key should be inserted at
     int getKeyIndex(Integer key, Integer[] keys) {
         int index = 0;
-        while (keys[index] != null && keys[index] < key) {
+        while (index < keys.length && keys[index] != null && keys[index] < key) {
             index++;
         }
         return index;

@@ -40,15 +40,35 @@ public class Ex2Main {
                 }
             }
         );
-        System.out.println(root);
+       // System.out.println(root);
 
+//        AbstractBPlusTree tree = new BPlusTreeJava(root);
+//        System.out.println(tree);
+//
+//        LeafNode leafNode = new LeafNode(4);
+//        System.out.println(leafNode);
+//        InnerNode innerNode = new InnerNode(4);
+//        System.out.println(innerNode);
+
+//        root = BPlusTreeNode.buildTree(4, new AbstractBPlusTree.Entry[]{
+//                new AbstractBPlusTree.Entry(1,new ValueReference(1))
+//        });
+        root = new InitialRootNode(4);
         AbstractBPlusTree tree = new BPlusTreeJava(root);
         System.out.println(tree);
 
-        LeafNode leafNode = new LeafNode(4);
-        System.out.println(leafNode);
-        InnerNode innerNode = new InnerNode(4);
-        System.out.println(innerNode);
+        tree.insert(1, new ValueReference(1));
+        tree.insert(2, new ValueReference(2));
+        tree.insert(3, new ValueReference(3));
+        tree.insert(4, new ValueReference(4));
+        System.out.println(tree);
+
+        tree.insert(5, new ValueReference(5));
+        tree.insert(6, new ValueReference(6));
+        System.out.println(tree);
+
+
+
 
         /*
          * playground
