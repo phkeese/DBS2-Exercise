@@ -7,6 +7,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.Objects;
 import java.util.Stack;
 
 /**
@@ -148,25 +149,9 @@ public class BPlusTreeJava extends AbstractBPlusTree {
         }
         // Case 1: Still room!
         if (!node.isFull()) {
-            // Completely rewrite keys and references
-            BPlusTreeNode<?>[] newReferences = new BPlusTreeNode[node.references.length];
-            for (int i = 1; i < newReferences.length; i++) {
-                newReferences[i] = node.references[i-1];
-            }
-            newReferences[0] = child;
-            // Sort references by smallest key
-            Arrays.stream(newReferences).sorted(new Comparator<BPlusTreeNode<?>>() {
-                @Override
-                public int compare(BPlusTreeNode<?> o1, BPlusTreeNode<?> o2) {
-                    return o1.getSmallestKey().compareTo(o2.getSmallestKey());
-                }
-            });
-            node.references = newReferences;
-
-            // Regenerate keys
-            for (int i = 0; i < node.keys.length && node.references[i+1] != null; i++) {
-                node.keys[i] = node.references[i+1].getSmallestKey();
-            }
+            // Append to node
+            node.references[node.references.length - 1] = child;
+            normalize(node);
 
             // No new node needed!
             return null;
@@ -218,6 +203,31 @@ public class BPlusTreeJava extends AbstractBPlusTree {
             index++;
         }
         return index;
+    }
+
+    void normalize(InnerNode node) {
+       Arrays.sort(node.references, new Comparator<BPlusTreeNode<?>>() {
+            @Override
+            public int compare(BPlusTreeNode<?> o1, BPlusTreeNode<?> o2) {
+                if (o1 == null && o2 == null) {
+                    return 0;
+                } else if(o1 == null) {
+                    return 1;
+                } else if (o2 == null) {
+                    return -1;
+                } else {
+                    return o1.getSmallestKey().compareTo(o2.getSmallestKey());
+                }
+            }
+        });
+        for (int i = 0; i < node.keys.length; i++) {
+            BPlusTreeNode<?> child = node.references[i + 1];
+            if (child == null) {
+                node.keys[i] = null;
+                continue;
+            }
+            node.keys[i] = child.getSmallestKey();
+        }
     }
 }
 
