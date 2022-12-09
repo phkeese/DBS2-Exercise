@@ -5,6 +5,8 @@ import de.hpi.dbs2.exercise2.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Stack;
 
 /**
@@ -146,16 +148,25 @@ public class BPlusTreeJava extends AbstractBPlusTree {
         }
         // Case 1: Still room!
         if (!node.isFull()) {
-            // Insert by shifting values to the right, starting from back
-            int index = getKeyIndex(key, node.keys);
-            int referenceIndex = index + 1;
-            for (int i = node.keys.length - 1; i > index; i--) {
-                node.keys[i] = node.keys[i - 1];
-                node.references[i + 1] = node.references[i - 1 + 1];
+            // Completely rewrite keys and references
+            BPlusTreeNode<?>[] newReferences = new BPlusTreeNode[node.references.length];
+            for (int i = 1; i < newReferences.length; i++) {
+                newReferences[i] = node.references[i-1];
             }
+            newReferences[0] = child;
+            // Sort references by smallest key
+            Arrays.stream(newReferences).sorted(new Comparator<BPlusTreeNode<?>>() {
+                @Override
+                public int compare(BPlusTreeNode<?> o1, BPlusTreeNode<?> o2) {
+                    return o1.getSmallestKey().compareTo(o2.getSmallestKey());
+                }
+            });
+            node.references = newReferences;
 
-            node.keys[index] = key;
-            node.references[referenceIndex] = child;
+            // Regenerate keys
+            for (int i = 0; i < node.keys.length && node.references[i+1] != null; i++) {
+                node.keys[i] = node.references[i+1].getSmallestKey();
+            }
 
             // No new node needed!
             return null;
