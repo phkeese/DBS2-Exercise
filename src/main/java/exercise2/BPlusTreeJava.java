@@ -38,20 +38,46 @@ public class BPlusTreeJava extends AbstractBPlusTree {
         }
         LeafNode leafNode  = (LeafNode) current;
 
-        // Insert into child and check, if we need to split
+        // Does the key already exist? Overwrite!
+        //   leafNode.references[pos] = value;
+        //   But remember return the old value!
 
-        BPlusTreeNode<?> rightNode = insertIntoLeaf(leafNode, key, value);;
-        while (rightNode != null) {
-            // Need to insert into parent
-            if (path.empty()) {
-                // Root node, new root
-                InnerNode newRoot = new InnerNode(rightNode.order, rightNode);
-                return null;
+        for(int i = 0; i < leafNode.keys.length; i++){
+            if(leafNode.keys[i] == key){
+                ValueReference oldValue = leafNode.references[i];
+                leafNode.references[i] = value;
+                return oldValue;
             }
+        }
+
+        // Insert into child and check, if we need to split
+        LeafNode rightLeaf = insertIntoLeaf(leafNode, key, value);
+
+        if(rightLeaf == null){
+            return value;
+        }
+
+        InnerNode currentNode = null;
+
+        do{
+            if(currentNode != null){
+                currentNode = insertIntoInner(path.pop(), currentNode);
+            }else {
+                currentNode = insertIntoInner(path.pop(), rightLeaf);
+            }
+        } while(currentNode != null);
+
+        /*
+        // New key - Is there still space?
+        //   leafNode.keys[pos] = key;
+        //   leafNode.references[pos] = value;
+        //   Don't forget to update the parent keys and so on...
+        int overflowKey = 0;
+        ValueReference overflowValue = null;
 
             InnerNode parent = path.pop();
             rightNode = insertIntoInner(parent, rightNode);
-        }
+        }*/
         return null;
     }
 
@@ -148,11 +174,18 @@ public class BPlusTreeJava extends AbstractBPlusTree {
 
         rightLeaf.nextSibling = leaf.nextSibling;
         leaf.nextSibling = rightLeaf;
+        if(rootNode instanceof LeafNode){
+            rootNode = new InnerNode(leaf.order, leaf, rightLeaf);
+            return null;
+        }
         return rightLeaf;
     }
 
     InnerNode insertIntoInner(InnerNode node, BPlusTreeNode<?> child) {
         Integer key = child.getSmallestKey();
+        if(child instanceof InnerNode){
+            child.keys[getLargestIndex(child.keys)] = null;
+        }
         // Case 1: Still room!
         if (!node.isFull()) {
             // Insert by shifting values to the right, starting from back
@@ -189,13 +222,21 @@ public class BPlusTreeJava extends AbstractBPlusTree {
         } else {
             insertIntoInner(rightNode, child);
         }
-        return rightNode;
+        return node;
     }
 
     // Get index where this key should be inserted at
     int getKeyIndex(Integer key, Integer[] keys) {
         int index = 0;
         while (keys[index] != null && keys[index] < key) {
+            index++;
+        }
+        return index;
+    }
+
+    int getLargestIndex(Integer[] keys) {
+        int index = 0;
+        while (keys[index] != null) {
             index++;
         }
         return index;
