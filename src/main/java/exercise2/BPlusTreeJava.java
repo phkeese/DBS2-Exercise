@@ -136,13 +136,14 @@ public class BPlusTreeJava extends AbstractBPlusTree {
         if (!node.isFull()) {
             // Insert by shifting values to the right, starting from back
             int index = getKeyIndex(key, node.keys);
+            int referenceIndex = index + 1;
             for (int i = node.keys.length - 1; i > index; i--) {
                 node.keys[i] = node.keys[i - 1];
                 node.references[i] = node.references[i - 1];
             }
 
             node.keys[index] = key;
-            node.references[index] = child;
+            node.references[referenceIndex] = child;
 
             // No new node needed!
             return null;
