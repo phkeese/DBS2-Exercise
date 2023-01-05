@@ -51,6 +51,7 @@ public class HashEquiInnerJoinJava extends InnerJoinOperation {
 		for (int bucketIndex = 0; bucketIndex < bucketCount; bucketIndex++) {
 			joinBuckets(leftBuckets[bucketIndex], rightBuckets[bucketIndex],outputRelation, tupleAppender);
 		}
+		tupleAppender.close();
 	}
 
 	private void joinBuckets(Bucket leftBucket, Bucket rightBucket,  Relation outputRelation, TupleAppender tupleAppender) {
