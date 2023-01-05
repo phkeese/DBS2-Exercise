@@ -81,7 +81,7 @@ public class HashEquiInnerJoinJava extends InnerJoinOperation {
 			Block block = getBlockManager().load(blockRef);
 			for (Tuple tuple : block) {
 				int hash = tuple.get(getJoinAttributePair().getLeftColumnIndex()).hashCode();
-				int bucketIndex = hash % bucketCount;
+				int bucketIndex = Math.floorMod(hash, bucketCount); // hash % bucketCount
 				// Insert into bucket
 				buckets[bucketIndex].add(tuple);
 			}
