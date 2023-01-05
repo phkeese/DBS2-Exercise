@@ -6,7 +6,7 @@ import de.hpi.dbs2.dbms.Relation
 import de.hpi.dbs2.exercise3.InnerJoinOperation
 import de.hpi.dbs2.exercise3.JoinAttributePair
 
-@ChosenImplementation(true)
+@ChosenImplementation(false)
 class HashEquiInnerJoinKotlin(
     blockManager: BlockManager,
     leftColumnIndex: Int,
