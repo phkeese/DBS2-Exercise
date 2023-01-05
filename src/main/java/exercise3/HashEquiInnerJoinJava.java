@@ -19,7 +19,7 @@ public class HashEquiInnerJoinJava extends InnerJoinOperation {
 	public int estimatedIOCost(
 		@NotNull Relation leftInputRelation, @NotNull Relation rightInputRelation
 	) {
-		throw new UnsupportedOperationException();
+		return (leftInputRelation.estimatedBlockCount() + rightInputRelation.estimatedBlockCount()) * 3;
 	}
 
 	@Override
@@ -28,6 +28,13 @@ public class HashEquiInnerJoinJava extends InnerJoinOperation {
 		@NotNull Relation outputRelation
 	) {
 		int bucketCount = getBlockManager().getFreeBlocks() - 1;
+
+		// Test wether this join can be executed min(B(S),B(R)) < (M-1)^2
+		int minimumSize = Math.min(leftInputRelation.estimatedBlockCount(), rightInputRelation.estimatedBlockCount());
+		if (minimumSize >= bucketCount * bucketCount) {
+			throw new RelationSizeExceedsCapacityException();
+		}
+
 		// TODO:
 		//  - calculate a sensible bucket count
 		//  - hash relation
